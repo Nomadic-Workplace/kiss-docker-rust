@@ -41,13 +41,14 @@ pub trait ContainerImpl {
 impl ContainerImpl for Container {
     fn start(&self) -> String {
         let img = self.get_image();
-        let mut cmd = vec!["run", "-d", img.as_str()];
+        let cmd = vec!["run", "-d", img.as_str()];
         let env = self.get_env();
-        let strvec: Vec<&str> = env.iter().map(|s| s.as_str()).collect();
+        let mut refenv: Vec<&str> = env.iter().map(|s| s.as_str()).collect();
 
-        cmd.extend(strvec);
+        // Order matters to docker
+        refenv.extend(cmd);
 
-        command::docker_exec(cmd).unwrap()
+        command::docker_exec(refenv).unwrap()
     }
 
     fn start_blocking(&self) -> String {
