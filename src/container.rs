@@ -35,26 +35,34 @@ pub trait ContainerImpl {
     fn start_blocking(&self) -> String;
     fn stop(&self, id: String) -> String;
     fn list_running(&self) -> String;
+    fn get_image(&self) -> String;
 }
 
 impl ContainerImpl for Container {
     fn start(&self) -> String {
-        // TODO: This needs to return the container ID from docker start stdout
-        let id = command::docker_exec(&*format!("start -d {}:{}", self.repo, self.tag));
+        let id = command::docker_exec(format!("docker start -d {}", self.get_image().as_str()).as_str());
         println!("Started container with id: {}", id);
         id
     }
 
     fn start_blocking(&self) -> String {
-        command::docker_exec(&*format!("run -a {}:{}", self.repo, self.tag))
+        command::docker_exec(format!("docker start -a {}", self.get_image().as_str()).as_str())
     }
 
     fn stop(&self, id: String) -> String {
-        command::docker_exec(&*format!("stop {}", id))
+        command::docker_exec(format!("stop {}", id).as_str())
     }
 
     fn list_running(&self) -> String {
         command::docker_exec("ps -a -f status=running")
+    }
+
+    fn get_image(&self) -> String {
+        let mut cmd = format!("run -a {}", self.repo);
+        if !self.tag.is_empty() {
+            cmd.push_str(format!(":{}", self.tag).as_str());
+        }
+        cmd
     }
 
 }
