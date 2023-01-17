@@ -1,9 +1,9 @@
 use std::process::Command;
 
-pub fn docker_exec(command: &str) -> String {
-    println!("Executing command docker {}", command);
+pub fn docker_exec(command: Vec<&str>) -> String {
+    println!("Executing command docker {:?}", command);
     let output = Command::new("docker")
-        .arg(command)
+        .args(command)
         .output()
         .expect("failed to execute process");
 

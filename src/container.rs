@@ -40,19 +40,19 @@ pub trait ContainerImpl {
 
 impl ContainerImpl for Container {
     fn start(&self) -> String {
-        command::docker_exec(format!("run -d {}", self.get_image().as_str()).as_str())
+        command::docker_exec(vec!["run", "-d", self.get_image().as_str()])
     }
 
     fn start_blocking(&self) -> String {
-        command::docker_exec(format!("start -a {}", self.get_image().as_str()).as_str())
+        command::docker_exec(vec!["run", "-a", self.get_image().as_str()])
     }
 
     fn stop(&self, id: String) -> String {
-        command::docker_exec(format!("stop {}", id).as_str())
+        command::docker_exec(vec!["stop", id])
     }
 
     fn list_running(&self) -> String {
-        command::docker_exec("ps -a -f status=running")
+        command::docker_exec(vec!["ps", "-a", "-f", "status=running"])
     }
 
     fn get_image(&self) -> String {
