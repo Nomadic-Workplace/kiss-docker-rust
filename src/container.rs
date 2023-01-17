@@ -7,7 +7,7 @@ use crate::command;
 /*
 API features:
 - Specify volumes (hashmap)
-- Specify environment variables (hashmap)
+- Specify environment variables (hashmap) IN PROGRESS
 - Specify custom command
 
 Starting a container should allow specifying repo + tag instead of just image
@@ -36,11 +36,12 @@ pub trait ContainerImpl {
     fn stop(&self, id: String) -> String;
     fn list_running(&self) -> String;
     fn get_image(&self) -> String;
+    fn get_env(&self) -> String;
 }
 
 impl ContainerImpl for Container {
     fn start(&self) -> String {
-        command::docker_exec(vec!["run", "-d", self.get_image().as_str()])
+        command::docker_exec(vec!["run", "-d", self.get_env(), self.get_image().as_str()])
     }
 
     fn start_blocking(&self) -> String {
@@ -61,6 +62,15 @@ impl ContainerImpl for Container {
             cmd.push_str(format!(":{}", self.tag).as_str());
         }
         cmd
+    }
+
+    fn get_env(&self) -> String {
+        // Take the hashmap and convert it to a series of -e $KEY=$VALUE
+        let mut env = "".to_string();
+        for(key, value) in self.env {
+            env.push_str(format!(" -e {}={}", key, value).as_str());
+        }
+        env
     }
 
 }
