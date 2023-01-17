@@ -45,19 +45,19 @@ impl ContainerImpl for Container {
     fn start(&self) -> String {
         //let env_ref = self.get_env.iter().map(|s| s.as_str()).collect();
         //let exec: Vec<&str> = vec![cmd, env_ref].into_iter().flatten().collect();
-        command::docker_exec(vec!["run", "-d", self.get_image().as_str()])
+        command::docker_exec(vec!["run", "-d", self.get_image().as_str()]).unwrap()
     }
 
     fn start_blocking(&self) -> String {
-        command::docker_exec(vec!["run", "-a", self.get_image().as_str()])
+        command::docker_exec(vec!["run", "-a", self.get_image().as_str()]).unwrap()
     }
 
     fn stop(&self, id: String) -> String {
-        command::docker_exec(vec!["stop", id.as_str()])
+        command::docker_exec(vec!["stop", id.as_str()]).unwrap()
     }
 
     fn list_running(&self) -> String {
-        command::docker_exec(vec!["ps", "-a", "-f", "status=running"])
+        command::docker_exec(vec!["ps", "-a", "-f", "status=running"]).unwrap()
     }
 
     fn get_image(&self) -> String {

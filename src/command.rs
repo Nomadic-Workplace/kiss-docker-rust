@@ -1,19 +1,30 @@
 use std::process::Command;
 
-pub fn docker_exec(command: Vec<&str>) -> String {
-    println!("Executing command docker {:?}", command);
-    let output = Command::new("docker")
-        .args(command)
-        .output()
-        .expect("failed to execute process");
+use crate::error;
+use crate::error::KissDockerError::{CommandTerminatedUnexpectedly, DockerCommandFailed};
 
-    let rc = output.status.code().unwrap();
+pub fn docker_exec(command: Vec<&str>) -> error::Result<String> {
+    println!("Executing command docker {:?}", command);
+    let output = Command::new("docker").args(command).output()?;
+
+    let rc = output.status.code().ok_or(CommandTerminatedUnexpectedly)?;
     if rc != 0 {
-        println!(
-            "Command stderr: {}",
-            String::from_utf8_lossy(&output.stderr)
-        );
+        return Err(DockerCommandFailed {
+            failure: String::from_utf8_lossy(&output.stderr).parse().unwrap(),
+        });
     }
 
-    String::from_utf8_lossy(&output.stdout).to_string()
+    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::command::docker_exec;
+    use crate::error::KissDockerError::DockerCommandFailed;
+
+    #[test]
+    fn test_failed_command() {
+        let r = docker_exec(vec!["this", "does", "not", "exist"]);
+        assert!(matches!(r, Err(DockerCommandFailed { failure: _ })));
+    }
 }
