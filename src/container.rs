@@ -40,16 +40,12 @@ pub trait ContainerImpl {
 
 impl ContainerImpl for Container {
     fn start(&self) -> String {
-        //let env_ref = self.get_env.iter().map(|s| s.as_str()).collect();
-        //let exec: Vec<&str> = vec![cmd, env_ref].into_iter().flatten().collect();
         let img = self.get_image();
         let mut cmd = vec!["run", "-d", img.as_str()];
         let env = self.get_env();
         let strvec: Vec<&str> = env.iter().map(|s| s.as_str()).collect();
 
-
         cmd.extend(strvec);
-
 
         command::docker_exec(cmd).unwrap()
     }
