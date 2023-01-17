@@ -10,9 +10,6 @@ API features:
 - Specify environment variables (hashmap) IN PROGRESS
 - Specify custom command
 
-Starting a container should allow specifying repo + tag instead of just image
-
-
 TODO: Vegi requirements:
 And collect stdout
 Plus some basic error handling
@@ -45,7 +42,16 @@ impl ContainerImpl for Container {
     fn start(&self) -> String {
         //let env_ref = self.get_env.iter().map(|s| s.as_str()).collect();
         //let exec: Vec<&str> = vec![cmd, env_ref].into_iter().flatten().collect();
-        command::docker_exec(vec!["run", "-d", self.get_image().as_str()]).unwrap()
+        let img = self.get_image();
+        let mut cmd = vec!["run", "-d", img.as_str()];
+        let env = self.get_env();
+        let strvec: Vec<&str> = env.iter().map(|s| s.as_str()).collect();
+
+
+        cmd.extend(strvec);
+
+
+        command::docker_exec(cmd).unwrap()
     }
 
     fn start_blocking(&self) -> String {
