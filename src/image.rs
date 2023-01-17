@@ -37,12 +37,12 @@ mod tests {
     #[test]
     fn test_find_alpine() {
         let r = find_by_tag("alpine", "latest").unwrap();
-        assert!(r != None);
+        assert!(r.is_some());
     }
 
     #[test]
     fn test_find_nonexistant() {
         let r = find_by_tag("non-existant", "local").unwrap();
-        assert_eq!(r, None);
+        assert!(r.is_none());
     }
 }
