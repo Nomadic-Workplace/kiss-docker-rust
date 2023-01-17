@@ -46,11 +46,11 @@ impl ContainerImpl for Container {
     }
 
     fn start_blocking(&self) -> String {
-        command::docker_exec(&*format!("start -a {}:{}", self.repo, self.tag))
+        command::docker_exec(&*format!("run -a {}:{}", self.repo, self.tag))
     }
 
     fn stop(&self, id: String) -> String {
-        command::docker_exec(&*format!("stop -t 0 {}", id))
+        command::docker_exec(&*format!("stop {}", id))
     }
 
     fn list_running(&self) -> String {
