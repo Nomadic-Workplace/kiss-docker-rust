@@ -1,6 +1,7 @@
 extern crate serde;
 extern crate serde_json;
 
+use std::concat;
 use std::collections::HashMap;
 use crate::command;
 
@@ -31,19 +32,27 @@ pub struct Container {
 }
 
 pub trait ContainerImpl {
+    fn start_blocking_raw(&self, args: Vec<&str>) -> String;
     fn start(&self) -> String;
     fn start_blocking(&self) -> String;
     fn stop(&self, id: String) -> String;
     fn list_running(&self) -> String;
     fn get_image(&self) -> String;
-    fn get_env(&self) -> String;
+    fn get_env(&self) -> Vec<String>;
     fn get_volumes(&self) -> String;
     fn get_cmd(&self) -> String;
 }
 
 impl ContainerImpl for Container {
+
+    fn start_blocking_raw(&self, args: Vec<&str>) -> String {
+        command::docker_exec(args)
+    }
+
     fn start(&self) -> String {
-        command::docker_exec(vec!["run", "-d", self.get_env().as_str(), self.get_image().as_str()])
+        //let env_ref = self.get_env.iter().map(|s| s.as_str()).collect();
+        //let exec: Vec<&str> = vec![cmd, env_ref].into_iter().flatten().collect();
+        command::docker_exec(vec!["run", "-d", self.get_image().as_str()])
     }
 
     fn start_blocking(&self) -> String {
@@ -66,11 +75,11 @@ impl ContainerImpl for Container {
         cmd
     }
 
-    fn get_env(&self) -> String {
-        // Take the hashmap and convert it to a series of -e $KEY=$VALUE
-        let mut env = "".to_string();
+    fn get_env(&self) -> Vec<String> {
+        let mut env: Vec<String>= vec![];
         for(key, value) in &self.env {
-            env.push_str(format!(" -e {}={}", key, value).as_str());
+            env.push("-e".to_string());
+            env.push(format!("{}={}", key, value));
         }
         env
     }
