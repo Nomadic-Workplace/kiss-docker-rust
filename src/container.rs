@@ -40,9 +40,7 @@ pub trait ContainerImpl {
 
 impl ContainerImpl for Container {
     fn start(&self) -> String {
-        let id = command::docker_exec(format!("docker start -d {}", self.get_image().as_str()).as_str());
-        println!("Started container with id: {}", id);
-        id
+        command::docker_exec(format!("docker run -d {}", self.get_image().as_str()).as_str())
     }
 
     fn start_blocking(&self) -> String {
