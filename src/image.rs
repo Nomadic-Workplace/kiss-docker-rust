@@ -9,11 +9,11 @@ struct ImageMetadata {
 }
 
 pub fn list_images() -> String {
-    docker_exec("images")
+    docker_exec(vec!["images"])
 }
 
 pub fn find_by_tag(component: &str, tag: &str) -> String {
-    let output = docker_exec("images --format '{{json .}}'");
+    let output = docker_exec(vec!["images", "--format", "'{{json .}}'"]);
     let images: Vec<ImageMetadata> = serde_json::from_str(&output).expect("Failed to parse JSON");
 
     for image in images {

@@ -48,7 +48,7 @@ impl ContainerImpl for Container {
     }
 
     fn stop(&self, id: String) -> String {
-        command::docker_exec(vec!["stop", id])
+        command::docker_exec(vec!["stop", id.as_str()])
     }
 
     fn list_running(&self) -> String {
