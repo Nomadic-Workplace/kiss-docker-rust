@@ -56,7 +56,7 @@ impl ContainerImpl for Container {
     }
 
     fn get_image(&self) -> String {
-        let mut cmd = format!("run -a {}", self.repo);
+        let mut cmd = self.repo.clone();
         if !self.tag.is_empty() {
             cmd.push_str(format!(":{}", self.tag).as_str());
         }
