@@ -9,7 +9,10 @@ pub fn docker_exec(command: Vec<&str>) -> String {
 
     let rc = output.status.code().unwrap();
     if rc != 0 {
-        println!("Command stderr: {}", String::from_utf8_lossy(&output.stderr).to_string());
+        println!(
+            "Command stderr: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
     }
 
     String::from_utf8_lossy(&output.stdout).to_string()

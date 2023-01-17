@@ -1,9 +1,8 @@
 extern crate serde;
 extern crate serde_json;
 
-use std::concat;
-use std::collections::HashMap;
 use crate::command;
+use std::collections::HashMap;
 
 /*
 API features:
@@ -28,7 +27,7 @@ pub struct Container {
     pub tag: String,
     pub volumes: HashMap<String, String>,
     pub env: HashMap<String, String>,
-    pub cmd: String
+    pub cmd: String,
 }
 
 pub trait ContainerImpl {
@@ -42,13 +41,7 @@ pub trait ContainerImpl {
     fn get_cmd(&self) -> String;
 }
 
-fn exec_raw(args: Vec<&str>) -> String {
-    command::docker_exec(args)
-}
-
-
 impl ContainerImpl for Container {
-
     fn start(&self) -> String {
         //let env_ref = self.get_env.iter().map(|s| s.as_str()).collect();
         //let exec: Vec<&str> = vec![cmd, env_ref].into_iter().flatten().collect();
@@ -76,8 +69,8 @@ impl ContainerImpl for Container {
     }
 
     fn get_env(&self) -> Vec<String> {
-        let mut env: Vec<String>= vec![];
-        for(key, value) in &self.env {
+        let mut env: Vec<String> = vec![];
+        for (key, value) in &self.env {
             env.push("-e".to_string());
             env.push(format!("{}={}", key, value));
         }
@@ -91,5 +84,4 @@ impl ContainerImpl for Container {
     fn get_cmd(&self) -> String {
         "".to_string()
     }
-
 }

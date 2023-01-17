@@ -1,7 +1,6 @@
 use crate::command::docker_exec;
 use serde::Deserialize;
 
-
 #[derive(Deserialize, Debug)]
 struct ImageMetadata {
     name: String,
