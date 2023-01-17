@@ -37,11 +37,13 @@ pub trait ContainerImpl {
     fn list_running(&self) -> String;
     fn get_image(&self) -> String;
     fn get_env(&self) -> String;
+    fn get_volumes(&self) -> String;
+    fn get_cmd(&self) -> String;
 }
 
 impl ContainerImpl for Container {
     fn start(&self) -> String {
-        command::docker_exec(vec!["run", "-d", self.get_env(), self.get_image().as_str()])
+        command::docker_exec(vec!["run", "-d", self.get_env().as_str(), self.get_image().as_str()])
     }
 
     fn start_blocking(&self) -> String {
@@ -67,10 +69,18 @@ impl ContainerImpl for Container {
     fn get_env(&self) -> String {
         // Take the hashmap and convert it to a series of -e $KEY=$VALUE
         let mut env = "".to_string();
-        for(key, value) in self.env {
+        for(key, value) in &self.env {
             env.push_str(format!(" -e {}={}", key, value).as_str());
         }
         env
+    }
+
+    fn get_volumes(&self) -> String {
+        "".to_string()
+    }
+
+    fn get_cmd(&self) -> String {
+        "".to_string()
     }
 
 }
