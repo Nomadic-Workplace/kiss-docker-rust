@@ -40,11 +40,11 @@ pub trait ContainerImpl {
 
 impl ContainerImpl for Container {
     fn start(&self) -> String {
-        command::docker_exec(format!("docker run -d {}", self.get_image().as_str()).as_str())
+        command::docker_exec(format!("run -d {}", self.get_image().as_str()).as_str())
     }
 
     fn start_blocking(&self) -> String {
-        command::docker_exec(format!("docker start -a {}", self.get_image().as_str()).as_str())
+        command::docker_exec(format!("start -a {}", self.get_image().as_str()).as_str())
     }
 
     fn stop(&self, id: String) -> String {
