@@ -32,7 +32,6 @@ pub struct Container {
 }
 
 pub trait ContainerImpl {
-    fn start_blocking_raw(&self, args: Vec<&str>) -> String;
     fn start(&self) -> String;
     fn start_blocking(&self) -> String;
     fn stop(&self, id: String) -> String;
@@ -43,11 +42,12 @@ pub trait ContainerImpl {
     fn get_cmd(&self) -> String;
 }
 
-impl ContainerImpl for Container {
+fn exec_raw(args: Vec<&str>) -> String {
+    command::docker_exec(args)
+}
 
-    fn start_blocking_raw(&self, args: Vec<&str>) -> String {
-        command::docker_exec(args)
-    }
+
+impl ContainerImpl for Container {
 
     fn start(&self) -> String {
         //let env_ref = self.get_env.iter().map(|s| s.as_str()).collect();
