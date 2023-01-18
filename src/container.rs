@@ -45,6 +45,10 @@ pub fn list_running() -> String {
     command::docker_exec(vec!["ps", "-a", "-f", "status=running"]).unwrap()
 }
 
+pub fn get_version() -> String {
+    command::docker_exec(vec!["--version"]).unwrap()
+}
+
 impl ContainerImpl for Container {
     fn start(&self) -> String {
         let mut cmd = vec!["run"];
