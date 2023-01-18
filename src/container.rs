@@ -30,12 +30,19 @@ pub struct Container {
 pub trait ContainerImpl {
     fn start(&self) -> String;
     fn start_blocking(&self) -> String;
-    fn stop(&self, id: String) -> String;
     fn list_running(&self) -> String;
     fn get_image(&self) -> String;
     fn get_env(&self) -> Vec<String>;
     fn get_volumes(&self) -> String;
     fn get_cmd(&self) -> String;
+}
+
+pub fn stop_container(id: String) -> String {
+    command::docker_exec(vec!["stop", id.as_str()]).unwrap()
+}
+
+pub fn list_running() -> String {
+    command::docker_exec(vec!["ps", "-a", "-f", "status=running"]).unwrap()
 }
 
 impl ContainerImpl for Container {
@@ -46,7 +53,6 @@ impl ContainerImpl for Container {
         let e = self.get_env();
         let env: Vec<&str> = e.iter().map(|s| s.as_str()).collect();
 
-        // Order matters to docker
         cmd.extend(env);
         cmd.extend(ops);
 
@@ -55,10 +61,6 @@ impl ContainerImpl for Container {
 
     fn start_blocking(&self) -> String {
         command::docker_exec(vec!["run", "-a", self.get_image().as_str()]).unwrap()
-    }
-
-    fn stop(&self, id: String) -> String {
-        command::docker_exec(vec!["stop", id.as_str()]).unwrap()
     }
 
     fn list_running(&self) -> String {
