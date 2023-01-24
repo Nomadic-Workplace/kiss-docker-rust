@@ -22,7 +22,7 @@ I need a blocking action that returns all the logs when the container terminates
 pub struct Container {
     pub repo: String,
     pub tag: String,
-    pub volumes: HashMap<String, String>,
+    pub volumes: Vec<String>,
     pub env: HashMap<String, String>,
     pub cmd: String,
     pub port: usize,
@@ -34,7 +34,6 @@ pub trait ContainerImpl {
     fn get_image(&self) -> String;
     fn get_env(&self) -> Vec<String>;
     fn get_port(&self) -> usize;
-    fn get_volumes(&self) -> String;
     fn get_cmd(&self) -> String;
 }
 
@@ -48,17 +47,35 @@ pub fn list_running() -> String {
 
 impl ContainerImpl for Container {
 
+//START KS DOCKER:
+// docker run -d -e SECUREDNA_KEYSHARE=bfbeb723ed064c22be32716ed9d994d55953483e847ff85a987b9b115441ac0a 8375bffbdc8b
+
+//START CLIENT DOCKER:
+//docker run -d ./synthclient --port 5000 --hdbserver http://hdbserver:8080 --keyservers http://keyserver1:8080 http://keyserver2:8080 http://keyserver3:8080
+
+//START HDB DOCKER:
+//docker run -d -v $(pwd)/test/data/hdb:/hdb/hdb -p 8080:8080 ghcr.io/securedna/hdbserver --hdbserver /hdb/hdb
+
     fn start(&self) -> String {
         let mut cmd = vec!["run"];
         let img = self.get_image();
         let e = self.get_env();
         let env: Vec<&str> = e.iter().map(|s| s.as_str()).collect();
+
         if self.blocking {
             cmd.extend(vec!["-a", "-rm"]);
         } else {
             cmd.extend(vec!["-d"]);
         }
-        cmd.extend(env);
+
+        if self.volumes {
+            cmd.extend(vec!["-v", self.volumes]);
+        }
+
+        if self.env {
+            cmd.extend(env);
+        }
+
         cmd.extend(vec![img.as_str()]);
 
         command::docker_exec(cmd).unwrap()
@@ -83,10 +100,6 @@ impl ContainerImpl for Container {
 
     fn get_port(&self) -> usize {
         self.port
-    }
-
-    fn get_volumes(&self) -> String {
-        "".to_string()
     }
 
     fn get_cmd(&self) -> String {
