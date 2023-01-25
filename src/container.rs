@@ -68,11 +68,13 @@ impl ContainerImpl for Container {
             cmd.extend(vec!["-d"]);
         }
 
-        if self.volumes {
-            cmd.extend(vec!["-v", self.volumes]);
+        if ! self.volumes.is_empty() {
+            for vol in &self.volumes {
+                cmd.extend(vec!["-v", vol.as_str()]);
+            }
         }
 
-        if self.env {
+        if ! self.env.is_empty() {
             cmd.extend(env);
         }
 
