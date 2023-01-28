@@ -34,8 +34,6 @@ pub trait ContainerImpl {
     fn start(&self) -> String;
     fn get_image(&self) -> String;
     fn get_env(&self) -> Vec<String>;
-    fn get_port(&self) -> usize;
-    fn get_cmd(&self) -> String;
 }
 
 pub fn stop_container(id: String) -> String {
@@ -70,10 +68,11 @@ impl ContainerImpl for Container {
         }
 
         let portstr = self.port.to_string();
-        let ports = format!("{}:{}", portstr, portstr).as_str();
+        let ports = format!("{}:{}", portstr, portstr);
+        let ports_str = ports.as_str();
 
         if self.port != 0 {
-            cmd.extend(vec!["-p", ports]);
+            cmd.extend(vec!["-p", ports_str]);
         }
 
         if ! self.volumes.is_empty() {
@@ -112,9 +111,4 @@ impl ContainerImpl for Container {
         }
         env
     }
-
-    fn get_cmd(&self) -> String {
-        "".to_string()
-    }
-
 }
