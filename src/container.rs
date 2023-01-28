@@ -70,9 +70,10 @@ impl ContainerImpl for Container {
         }
 
         let portstr = self.port.to_string();
+        let ports = format!("{}:{}", portstr, portstr).as_str();
 
         if self.port != 0 {
-            cmd.extend(vec!["-p", portstr.as_str(), ":", portstr.as_str()]);
+            cmd.extend(vec!["-p", ports]);
         }
 
         if ! self.volumes.is_empty() {
@@ -110,10 +111,6 @@ impl ContainerImpl for Container {
             env.push(format!("{}={}", key, value));
         }
         env
-    }
-
-    fn get_port(&self) -> usize {
-        self.port
     }
 
     fn get_cmd(&self) -> String {
