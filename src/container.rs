@@ -72,7 +72,7 @@ impl ContainerImpl for Container {
         let portstr = self.port.to_string();
 
         if self.port != 0 {
-            cmd.extend(vec![portstr.as_str()]);
+            cmd.extend(vec!["-p", portstr.as_str(), ":", portstr.as_str()]);
         }
 
         if ! self.volumes.is_empty() {
