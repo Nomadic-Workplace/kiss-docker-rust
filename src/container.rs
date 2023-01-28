@@ -69,6 +69,10 @@ impl ContainerImpl for Container {
             cmd.extend(vec!["-d"]);
         }
 
+        if self.port {
+            cmd.extend(vec![self.port]);
+        }
+
         if ! self.volumes.is_empty() {
             for vol in &self.volumes {
                 cmd.extend(vec!["-v", vol.as_str()]);
