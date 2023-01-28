@@ -26,7 +26,8 @@ pub struct Container {
     pub env: HashMap<String, String>,
     pub cmd: String,
     pub port: usize,
-    pub blocking: bool
+    pub blocking: bool,
+    pub ops: Vec<String>
 }
 
 pub trait ContainerImpl {
@@ -78,6 +79,11 @@ impl ContainerImpl for Container {
             cmd.extend(env);
         }
 
+        if ! self.ops.is_empty() {
+            let ops_str: Vec<&str> = self.ops.iter().map(|s| &**s).collect();
+            cmd.extend(ops_str);
+        }
+
         cmd.extend(vec![img.as_str()]);
 
         command::docker_exec(cmd).unwrap()
@@ -107,4 +113,5 @@ impl ContainerImpl for Container {
     fn get_cmd(&self) -> String {
         "".to_string()
     }
+
 }
