@@ -4,7 +4,6 @@ use crate::error;
 use crate::error::KissDockerError::{CommandTerminatedUnexpectedly, DockerCommandFailed};
 
 pub fn docker_exec(command: Vec<&str>) -> error::Result<String> {
-    println!("Executing command docker {:?}", command);
     let output = Command::new("docker").args(command).output()?;
 
     let rc = output.status.code().ok_or(CommandTerminatedUnexpectedly)?;

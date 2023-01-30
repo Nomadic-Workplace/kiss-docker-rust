@@ -4,21 +4,6 @@ extern crate serde_json;
 use crate::command;
 use std::collections::HashMap;
 
-/*
-API features:
-- Specify volumes (hashmap)
-- Specify environment variables (hashmap) IN PROGRESS
-- Specify custom command
-
-TODO: Vegi requirements:
-And collect stdout
-Plus some basic error handling
-Basically docker run --rm
-
-I need a blocking action that returns all the logs when the container terminates
-
- */
-
 pub struct Container {
     pub repo: String,
     pub tag: String,
@@ -45,15 +30,6 @@ pub fn list_running() -> String {
 }
 
 impl ContainerImpl for Container {
-
-//START KS DOCKER:
-// docker run -d -e SECUREDNA_KEYSHARE=bfbeb723ed064c22be32716ed9d994d55953483e847ff85a987b9b115441ac0a 8375bffbdc8b
-
-//START CLIENT DOCKER:
-//docker run -d ./synthclient --port 5000 --hdbserver http://hdbserver:8080 --keyservers http://keyserver1:8080 http://keyserver2:8080 http://keyserver3:8080
-
-//START HDB DOCKER:
-//docker run -d -v $(pwd)/test/data/hdb:/hdb/hdb -p 8080:8080 ghcr.io/securedna/hdbserver --hdbserver /hdb/hdb
 
     fn start(&self) -> String {
         let mut cmd = vec!["run"];
