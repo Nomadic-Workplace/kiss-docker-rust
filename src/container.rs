@@ -49,7 +49,7 @@ impl ContainerImpl for Container {
         let ports = format!("{}:{}", port_expose, port_internal);
         let ports_str = ports.as_str();
 
-        if self.port != 0 {
+        if self.port_internal != 0 && self.port_expose != 0 {
             cmd.extend(vec!["-p", ports_str]);
         }
 
