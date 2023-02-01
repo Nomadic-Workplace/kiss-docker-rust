@@ -10,7 +10,8 @@ pub struct Container {
     pub volumes: Vec<String>,
     pub env: HashMap<String, String>,
     pub cmd: String,
-    pub port: usize,
+    pub port_expose: usize,
+    pub port_internal: usize,
     pub blocking: bool,
     pub ops: Vec<String>
 }
@@ -43,8 +44,9 @@ impl ContainerImpl for Container {
             cmd.extend(vec!["-d"]);
         }
 
-        let portstr = self.port.to_string();
-        let ports = format!("{}:{}", portstr, portstr);
+        let port_expose = self.port_expose.to_string();
+        let port_internal = self.port_internal.to_string();
+        let ports = format!("{}:{}", port_expose, port_internal);
         let ports_str = ports.as_str();
 
         if self.port != 0 {
