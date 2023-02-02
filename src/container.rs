@@ -4,60 +4,72 @@ extern crate serde_json;
 use crate::command;
 use std::collections::HashMap;
 
-/*
-API features:
-- Specify volumes (hashmap)
-- Specify environment variables (hashmap) IN PROGRESS
-- Specify custom command
-
-Starting a container should allow specifying repo + tag instead of just image
-
-
-TODO: Vegi requirements:
-And collect stdout
-Plus some basic error handling
-Basically docker run --rm
-
-I need a blocking action that returns all the logs when the container terminates
-
- */
-
 pub struct Container {
     pub repo: String,
     pub tag: String,
-    pub volumes: HashMap<String, String>,
+    pub volumes: Vec<String>,
     pub env: HashMap<String, String>,
     pub cmd: String,
+    pub port_expose: usize,
+    pub port_internal: usize,
+    pub blocking: bool,
+    pub ops: Vec<String>,
 }
 
 pub trait ContainerImpl {
     fn start(&self) -> String;
-    fn start_blocking(&self) -> String;
-    fn stop(&self, id: String) -> String;
-    fn list_running(&self) -> String;
     fn get_image(&self) -> String;
     fn get_env(&self) -> Vec<String>;
-    fn get_volumes(&self) -> String;
-    fn get_cmd(&self) -> String;
+}
+
+pub fn stop_container(id: String) -> String {
+    command::docker_exec(vec!["stop", id.as_str()]).unwrap()
+}
+
+pub fn list_running() -> String {
+    command::docker_exec(vec!["ps", "-a", "-f", "status=running"]).unwrap()
 }
 
 impl ContainerImpl for Container {
     fn start(&self) -> String {
-        //let env_ref = self.get_env.iter().map(|s| s.as_str()).collect();
-        //let exec: Vec<&str> = vec![cmd, env_ref].into_iter().flatten().collect();
-        command::docker_exec(vec!["run", "-d", self.get_image().as_str()]).unwrap()
-    }
+        let mut cmd = vec!["run"];
+        let img = self.get_image();
+        let e = self.get_env();
+        let env: Vec<&str> = e.iter().map(|s| s.as_str()).collect();
 
-    fn start_blocking(&self) -> String {
-        command::docker_exec(vec!["run", "-a", self.get_image().as_str()]).unwrap()
-    }
+        if self.blocking {
+            cmd.extend(vec!["-a", "-rm"]);
+        } else {
+            cmd.extend(vec!["-d"]);
+        }
 
-    fn stop(&self, id: String) -> String {
-        command::docker_exec(vec!["stop", id.as_str()]).unwrap()
-    }
+        let port_expose = self.port_expose.to_string();
+        let port_internal = self.port_internal.to_string();
+        let ports = format!("{}:{}", port_expose, port_internal);
+        let ports_str = ports.as_str();
 
-    fn list_running(&self) -> String {
-        command::docker_exec(vec!["ps", "-a", "-f", "status=running"]).unwrap()
+        if self.port_internal != 0 && self.port_expose != 0 {
+            cmd.extend(vec!["-p", ports_str]);
+        }
+
+        if !self.volumes.is_empty() {
+            for vol in &self.volumes {
+                cmd.extend(vec!["-v", vol.as_str()]);
+            }
+        }
+
+        if !self.env.is_empty() {
+            cmd.extend(env);
+        }
+
+        cmd.extend(vec![img.as_str()]);
+
+        if !self.ops.is_empty() {
+            let ops_str: Vec<&str> = self.ops.iter().map(|s| &**s).collect();
+            cmd.extend(ops_str);
+        }
+
+        command::docker_exec(cmd).unwrap()
     }
 
     fn get_image(&self) -> String {
@@ -75,13 +87,5 @@ impl ContainerImpl for Container {
             env.push(format!("{}={}", key, value));
         }
         env
-    }
-
-    fn get_volumes(&self) -> String {
-        "".to_string()
-    }
-
-    fn get_cmd(&self) -> String {
-        "".to_string()
     }
 }
