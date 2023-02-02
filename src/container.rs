@@ -13,7 +13,7 @@ pub struct Container {
     pub port_expose: usize,
     pub port_internal: usize,
     pub blocking: bool,
-    pub ops: Vec<String>
+    pub ops: Vec<String>,
 }
 
 pub trait ContainerImpl {
@@ -31,7 +31,6 @@ pub fn list_running() -> String {
 }
 
 impl ContainerImpl for Container {
-
     fn start(&self) -> String {
         let mut cmd = vec!["run"];
         let img = self.get_image();
@@ -53,19 +52,19 @@ impl ContainerImpl for Container {
             cmd.extend(vec!["-p", ports_str]);
         }
 
-        if ! self.volumes.is_empty() {
+        if !self.volumes.is_empty() {
             for vol in &self.volumes {
                 cmd.extend(vec!["-v", vol.as_str()]);
             }
         }
 
-        if ! self.env.is_empty() {
+        if !self.env.is_empty() {
             cmd.extend(env);
         }
 
         cmd.extend(vec![img.as_str()]);
 
-        if ! self.ops.is_empty() {
+        if !self.ops.is_empty() {
             let ops_str: Vec<&str> = self.ops.iter().map(|s| &**s).collect();
             cmd.extend(ops_str);
         }
