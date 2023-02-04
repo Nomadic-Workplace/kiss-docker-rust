@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json;
 
+#[derive(Debug, Clone, Default)]
 pub struct Container {
     pub repo: String,
     pub tag: String,
@@ -120,11 +121,18 @@ impl ContainerImpl for Container {
 
 #[cfg(test)]
 mod tests {
-    use crate::container::list_running;
+    use crate::container::{list_running, Container};
 
     #[test]
     fn test_list_running() {
         let r = list_running(None);
         println!("{:?}", r);
+    }
+
+    #[test]
+    fn test_make_default() {
+        let _ctn = Container {
+            ..Default::default()
+        };
     }
 }
