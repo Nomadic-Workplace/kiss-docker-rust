@@ -98,7 +98,7 @@ impl ContainerImpl for Container {
             cmd.extend(ops_str);
         }
 
-        command::docker_exec(cmd).unwrap()
+        String::from(command::docker_exec(cmd).unwrap().trim())
     }
 
     fn get_image(&self) -> String {
@@ -121,7 +121,7 @@ impl ContainerImpl for Container {
 
 #[cfg(test)]
 mod tests {
-    use crate::container::{list_running, Container};
+    use crate::container::{list_running, stop_container, Container, ContainerImpl};
 
     #[test]
     fn test_list_running() {
@@ -134,5 +134,16 @@ mod tests {
         let _ctn = Container {
             ..Default::default()
         };
+    }
+
+    #[test]
+    fn test_run_and_kill() {
+        let ctn_id = Container {
+            repo: String::from("alpine"),
+            ..Default::default()
+        }
+        .start();
+
+        stop_container(&ctn_id);
     }
 }
