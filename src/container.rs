@@ -1,8 +1,8 @@
-extern crate serde;
-extern crate serde_json;
-
 use crate::command;
 use std::collections::HashMap;
+
+use serde::{Deserialize, Serialize};
+use serde_json;
 
 pub struct Container {
     pub repo: String,
@@ -26,8 +26,36 @@ pub fn stop_container(id: String) -> String {
     command::docker_exec(vec!["stop", id.as_str()]).unwrap()
 }
 
-pub fn list_running() -> String {
-    command::docker_exec(vec!["ps", "-a", "-f", "status=running"]).unwrap()
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RunningContainer {
+    pub id: String,
+    pub image: String,
+    pub names: String,
+}
+
+pub fn list_running(filter: Option<&str>) -> Vec<RunningContainer> {
+    let lines = command::docker_exec(vec![
+        "ps",
+        "-a",
+        "-f",
+        "status=running",
+        "--format",
+        "{\"id\":\"{{ .ID }}\", \"image\": \"{{ .Image }}\", \"names\":\"{{ .Names }}\"}",
+    ])
+    .unwrap();
+
+    lines
+        .split('\n')
+        .filter(|s| !s.is_empty())
+        .filter(|s| {
+            if let Some(f) = &filter {
+                s.contains(f)
+            } else {
+                true
+            }
+        })
+        .map(|raw| serde_json::from_str(raw).unwrap())
+        .collect()
 }
 
 impl ContainerImpl for Container {
@@ -87,5 +115,16 @@ impl ContainerImpl for Container {
             env.push(format!("{}={}", key, value));
         }
         env
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::container::list_running;
+
+    #[test]
+    fn test_list_running() {
+        let r = list_running(None);
+        println!("{:?}", r);
     }
 }
