@@ -23,8 +23,8 @@ pub trait ContainerImpl {
     fn get_env(&self) -> Vec<String>;
 }
 
-pub fn stop_container(id: String) -> String {
-    command::docker_exec(vec!["stop", id.as_str()]).unwrap()
+pub fn stop_container(id: &str) -> String {
+    command::docker_exec(vec!["stop", id]).unwrap()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
