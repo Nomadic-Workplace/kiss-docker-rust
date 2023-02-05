@@ -37,3 +37,30 @@ pub struct ImageSummary {
     #[serde(default)]
     pub repository: String,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RunningContainer {
+    #[serde(rename = "ID")]
+    /// ID is the content-addressable ID of an container.
+    ///
+    /// This identifier is a content-addressable digest calculated from the
+    /// image's configuration (which includes the digests of layers used by
+    /// the image).
+    ///
+    /// Note that this digest differs from the `RepoDigests` below, which
+    /// holds digests of image manifests that reference the image.
+    pub id: String,
+    #[serde(rename = "Image")]
+    #[serde(default)]
+    /// Image name/tag in the local image cache that reference this
+    /// image.
+    pub image: String,
+
+    #[serde(rename = "Names")]
+    #[serde(default)]
+    pub names: String,
+
+    #[serde(rename = "State")]
+    #[serde(default)]
+    pub state: String,
+}

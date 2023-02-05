@@ -1,11 +1,13 @@
 [package]
 name = "kiss_docker"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+async-process = "1.6.0"
 serde_json = "1.0.91"
 serde = { version = "1.0.150", features = ["derive"] }
 thiserror = "1.0.38"
+tokio = { version = "1.25.0", features = ["rt", "macros"]}

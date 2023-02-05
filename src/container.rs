@@ -1,7 +1,7 @@
 use crate::command;
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
+use crate::models::RunningContainer;
 use serde_json;
 
 #[derive(Debug, Clone, Default)]
@@ -17,32 +17,19 @@ pub struct Container {
     pub ops: Vec<String>,
 }
 
-pub trait ContainerImpl {
-    fn start(&self) -> String;
-    fn get_image(&self) -> String;
-    fn get_env(&self) -> Vec<String>;
+pub async fn stop_container(id: &str) -> String {
+    command::docker_exec(vec!["stop", id]).await.unwrap()
 }
-
-pub fn stop_container(id: &str) -> String {
-    command::docker_exec(vec!["stop", id]).unwrap()
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RunningContainer {
-    pub id: String,
-    pub image: String,
-    pub names: String,
-}
-
-pub fn list_running(filter: Option<&str>) -> Vec<RunningContainer> {
+pub async fn list_running(filter: Option<&str>) -> Vec<RunningContainer> {
     let lines = command::docker_exec(vec![
         "ps",
         "-a",
         "-f",
         "status=running",
         "--format",
-        "{\"id\":\"{{ .ID }}\", \"image\": \"{{ .Image }}\", \"names\":\"{{ .Names }}\"}",
+        "{{json .}}",
     ])
+    .await
     .unwrap();
 
     lines
@@ -59,8 +46,8 @@ pub fn list_running(filter: Option<&str>) -> Vec<RunningContainer> {
         .collect()
 }
 
-impl ContainerImpl for Container {
-    fn start(&self) -> String {
+impl Container {
+    pub async fn start(&self) -> String {
         let mut cmd = vec!["run"];
         let img = self.get_image();
         let e = self.get_env();
@@ -98,10 +85,10 @@ impl ContainerImpl for Container {
             cmd.extend(ops_str);
         }
 
-        String::from(command::docker_exec(cmd).unwrap().trim())
+        String::from(command::docker_exec(cmd).await.unwrap().trim())
     }
 
-    fn get_image(&self) -> String {
+    pub fn get_image(&self) -> String {
         let mut cmd = self.repo.clone();
         if !self.tag.is_empty() {
             cmd.push_str(format!(":{}", self.tag).as_str());
@@ -109,7 +96,7 @@ impl ContainerImpl for Container {
         cmd
     }
 
-    fn get_env(&self) -> Vec<String> {
+    pub fn get_env(&self) -> Vec<String> {
         let mut env: Vec<String> = vec![];
         for (key, value) in &self.env {
             env.push("-e".to_string());
@@ -121,11 +108,11 @@ impl ContainerImpl for Container {
 
 #[cfg(test)]
 mod tests {
-    use crate::container::{list_running, stop_container, Container, ContainerImpl};
+    use crate::container::{list_running, stop_container, Container};
 
-    #[test]
-    fn test_list_running() {
-        let r = list_running(None);
+    #[tokio::test]
+    async fn test_list_running() {
+        let r = list_running(None).await;
         println!("{:?}", r);
     }
 
@@ -136,14 +123,15 @@ mod tests {
         };
     }
 
-    #[test]
-    fn test_run_and_kill() {
+    #[tokio::test]
+    async fn test_run_and_kill() {
         let ctn_id = Container {
             repo: String::from("alpine"),
             ..Default::default()
         }
-        .start();
+        .start()
+        .await;
 
-        stop_container(&ctn_id);
+        stop_container(&ctn_id).await;
     }
 }
