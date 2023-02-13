@@ -10,7 +10,6 @@ pub struct Container {
     pub tag: String,
     pub volumes: Vec<String>,
     pub env: HashMap<String, String>,
-    pub cmd: String,
     pub port_expose: usize,
     pub port_internal: usize,
     pub blocking: bool,
@@ -54,7 +53,7 @@ impl Container {
         let env: Vec<&str> = e.iter().map(|s| s.as_str()).collect();
 
         if self.blocking {
-            cmd.extend(vec!["-a", "-rm"]);
+            cmd.extend(vec!["--rm"]);
         } else {
             cmd.extend(vec!["-d"]);
         }
@@ -133,5 +132,21 @@ mod tests {
         .await;
 
         stop_container(&ctn_id).await;
+    }
+
+    #[tokio::test]
+    async fn test_run_blocking() {
+        let text = "test_text_print";
+
+        let output = Container {
+            repo: String::from("alpine"),
+            ops: vec![String::from("echo"), String::from(text)],
+            blocking: true,
+            ..Default::default()
+        }
+        .start()
+        .await;
+
+        assert_eq!(text, output)
     }
 }
