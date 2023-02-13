@@ -13,6 +13,8 @@ pub struct Container {
     pub port_expose: usize,
     pub port_internal: usize,
     pub blocking: bool,
+
+    /// command [arg...]
     pub ops: Vec<String>,
 }
 
@@ -79,10 +81,7 @@ impl Container {
 
         cmd.extend(vec![img.as_str()]);
 
-        if !self.ops.is_empty() {
-            let ops_str: Vec<&str> = self.ops.iter().map(|s| &**s).collect();
-            cmd.extend(ops_str);
-        }
+        cmd.extend(self.ops.iter().map(|s| s.as_str()));
 
         String::from(command::docker_exec(cmd).await.unwrap().trim())
     }
