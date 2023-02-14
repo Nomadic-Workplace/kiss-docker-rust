@@ -83,8 +83,6 @@ impl Container<'_> {
 
         cmd.extend(self.ops);
 
-        println!("{:?}", cmd);
-
         String::from(command::docker_exec(cmd).await.unwrap().trim())
     }
 
