@@ -1,4 +1,4 @@
-use crate::command;
+use crate::{command, error};
 use std::collections::HashMap;
 
 use crate::models::RunningContainer;
@@ -48,7 +48,7 @@ pub async fn list_running(filter: Option<&str>) -> Vec<RunningContainer> {
 }
 
 impl Container<'_> {
-    pub async fn start(&self) -> String {
+    pub async fn start(&self) -> error::Result<String> {
         let mut cmd = vec!["run"];
         let img = self.get_image();
         let e = self.get_env();
@@ -83,7 +83,9 @@ impl Container<'_> {
 
         cmd.extend(self.ops);
 
-        String::from(command::docker_exec(cmd).await.unwrap().trim())
+        let result = command::docker_exec(cmd).await?;
+
+        Ok(String::from(result.trim()))
     }
 
     pub fn get_image(&self) -> String {
@@ -128,7 +130,8 @@ mod tests {
             ..Default::default()
         }
         .start()
-        .await;
+        .await
+        .unwrap();
 
         stop_container(&ctn_id).await;
     }
@@ -144,8 +147,21 @@ mod tests {
             ..Default::default()
         }
         .start()
-        .await;
+        .await
+        .unwrap();
 
         assert_eq!(text, output)
+    }
+
+    #[tokio::test]
+    async fn test_bogus_container() {
+        let result = Container {
+            repo: "complete_bogus_foobar",
+            ..Default::default()
+        }
+        .start()
+        .await;
+
+        assert!(matches!(result, Err(_)));
     }
 }
