@@ -1,8 +1,7 @@
-use crate::{command, error};
-use std::collections::HashMap;
-
 use crate::models::RunningContainer;
+use crate::{command, error};
 use serde_json;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
 pub struct Container<'a> {
@@ -18,10 +17,11 @@ pub struct Container<'a> {
     pub ops: &'a [&'a str],
 }
 
-pub async fn stop_container(id: &str) -> String {
-    command::docker_exec(vec!["stop", id]).await.unwrap()
+pub async fn stop_container(id: &str) -> error::Result<()> {
+    command::docker_exec(vec!["stop", id]).await?;
+    Ok(())
 }
-pub async fn list_running(filter: Option<&str>) -> Vec<RunningContainer> {
+pub async fn list_running(filter: Option<&str>) -> error::Result<Vec<RunningContainer>> {
     let lines = command::docker_exec(vec![
         "ps",
         "-a",
@@ -30,8 +30,7 @@ pub async fn list_running(filter: Option<&str>) -> Vec<RunningContainer> {
         "--format",
         "{{json .}}",
     ])
-    .await
-    .unwrap();
+    .await?;
 
     lines
         .split('\n')
@@ -43,8 +42,8 @@ pub async fn list_running(filter: Option<&str>) -> Vec<RunningContainer> {
                 true
             }
         })
-        .map(|raw| serde_json::from_str(raw).unwrap())
-        .collect()
+        .map(|raw| serde_json::from_str(raw).map_err(error::KissDockerError::SerdeError))
+        .collect::<error::Result<Vec<RunningContainer>>>()
 }
 
 impl Container<'_> {
@@ -133,7 +132,7 @@ mod tests {
         .await
         .unwrap();
 
-        stop_container(&ctn_id).await;
+        stop_container(&ctn_id).await.unwrap();
     }
 
     #[tokio::test]
