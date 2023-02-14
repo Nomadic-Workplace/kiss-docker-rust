@@ -5,16 +5,17 @@ use crate::models::RunningContainer;
 use serde_json;
 
 #[derive(Debug, Clone, Default)]
-pub struct Container {
-    pub repo: String,
-    pub tag: String,
-    pub volumes: Vec<String>,
+pub struct Container<'a> {
+    pub repo: &'a str,
+    pub tag: &'a str,
+    pub volumes: &'a [&'a str],
     pub env: HashMap<String, String>,
-    pub cmd: String,
     pub port_expose: usize,
     pub port_internal: usize,
     pub blocking: bool,
-    pub ops: Vec<String>,
+
+    /// command [arg...]
+    pub ops: &'a [&'a str],
 }
 
 pub async fn stop_container(id: &str) -> String {
@@ -46,7 +47,7 @@ pub async fn list_running(filter: Option<&str>) -> Vec<RunningContainer> {
         .collect()
 }
 
-impl Container {
+impl Container<'_> {
     pub async fn start(&self) -> String {
         let mut cmd = vec!["run"];
         let img = self.get_image();
@@ -54,7 +55,7 @@ impl Container {
         let env: Vec<&str> = e.iter().map(|s| s.as_str()).collect();
 
         if self.blocking {
-            cmd.extend(vec!["-a", "-rm"]);
+            cmd.extend(vec!["--rm"]);
         } else {
             cmd.extend(vec!["-d"]);
         }
@@ -69,8 +70,8 @@ impl Container {
         }
 
         if !self.volumes.is_empty() {
-            for vol in &self.volumes {
-                cmd.extend(vec!["-v", vol.as_str()]);
+            for vol in self.volumes {
+                cmd.extend(vec!["-v", vol]);
             }
         }
 
@@ -80,16 +81,15 @@ impl Container {
 
         cmd.extend(vec![img.as_str()]);
 
-        if !self.ops.is_empty() {
-            let ops_str: Vec<&str> = self.ops.iter().map(|s| &**s).collect();
-            cmd.extend(ops_str);
-        }
+        cmd.extend(self.ops);
+
+        println!("{:?}", cmd);
 
         String::from(command::docker_exec(cmd).await.unwrap().trim())
     }
 
     pub fn get_image(&self) -> String {
-        let mut cmd = self.repo.clone();
+        let mut cmd = String::from(self.repo);
         if !self.tag.is_empty() {
             cmd.push_str(format!(":{}", self.tag).as_str());
         }
@@ -126,12 +126,28 @@ mod tests {
     #[tokio::test]
     async fn test_run_and_kill() {
         let ctn_id = Container {
-            repo: String::from("alpine"),
+            repo: "alpine",
             ..Default::default()
         }
         .start()
         .await;
 
         stop_container(&ctn_id).await;
+    }
+
+    #[tokio::test]
+    async fn test_run_blocking() {
+        let text = "test_text_print";
+
+        let output = Container {
+            repo: "alpine",
+            ops: &["echo", text],
+            blocking: true,
+            ..Default::default()
+        }
+        .start()
+        .await;
+
+        assert_eq!(text, output)
     }
 }
