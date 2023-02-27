@@ -3,7 +3,7 @@ use crate::error;
 use crate::models::ImageSummary;
 
 pub async fn list_images() -> error::Result<Vec<ImageSummary>> {
-    let output = docker_exec(vec!["images", "--format", "{{json .}}"])
+    let output = docker_exec(vec!["images", "--digests", "--format", "{{json .}}"])
         .await
         .unwrap();
     let images: Vec<ImageSummary> = output
@@ -58,5 +58,12 @@ mod tests {
     async fn test_find_nonexistant() {
         let r = find_by_tag("non-existant", "local").await.unwrap();
         assert!(r.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_digest() {
+        let r = find_by_tag("alpine", "latest").await.unwrap();
+        assert!(r.is_some());
+        assert!(r.unwrap().digest.starts_with("sha256:"));
     }
 }
