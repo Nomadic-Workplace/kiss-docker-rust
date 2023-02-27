@@ -36,6 +36,12 @@ pub struct ImageSummary {
     #[serde(rename = "Repository")]
     #[serde(default)]
     pub repository: String,
+
+    /// A container image digest, image digest, or digest, is a unique, immutable identifier for a container image to deploy.
+    /// For Docker images, the digest is a SHA256 hash of the docker image
+    #[serde(rename = "Digest")]
+    #[serde(default)]
+    pub digest: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
