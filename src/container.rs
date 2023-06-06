@@ -12,6 +12,7 @@ pub struct Container<'a> {
     pub port_expose: usize,
     pub port_internal: usize,
     pub blocking: bool,
+    pub norm: bool,
 
     /// command [arg...]
     pub ops: &'a [&'a str],
@@ -53,10 +54,12 @@ impl Container<'_> {
         let e = self.get_env();
         let env: Vec<&str> = e.iter().map(|s| s.as_str()).collect();
 
-        if self.blocking {
-            cmd.extend(vec!["--rm"]);
-        } else {
+        if !self.blocking {
             cmd.extend(vec!["-d"]);
+        }
+
+        if !self.norm {
+            cmd.extend(vec!["--rm"]);
         }
 
         let port_expose = self.port_expose.to_string();
