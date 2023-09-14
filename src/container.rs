@@ -14,6 +14,9 @@ pub struct Container<'a> {
     pub blocking: bool,
     pub norm: bool,
 
+    /// docker runtime options/flags, the caller is responsible for providing the - or -- prefix
+    pub flags: HashMap<String, String>,
+
     /// command [arg...]
     pub ops: &'a [&'a str],
 }
@@ -53,6 +56,8 @@ impl Container<'_> {
         let img = self.get_image();
         let e = self.get_env();
         let env: Vec<&str> = e.iter().map(|s| s.as_str()).collect();
+        let r_o = self.get_runtime_flags();
+        let flags: Vec<&str> = r_o.iter().map(|s| s.as_str()).collect();
 
         if !self.blocking {
             cmd.extend(vec!["-d"]);
@@ -81,6 +86,8 @@ impl Container<'_> {
             cmd.extend(env);
         }
 
+        cmd.extend(flags);
+
         cmd.extend(vec![img.as_str()]);
 
         cmd.extend(self.ops);
@@ -106,11 +113,21 @@ impl Container<'_> {
         }
         env
     }
+
+    pub fn get_runtime_flags(&self) -> Vec<String> {
+        let mut env: Vec<String> = vec![];
+        for (key, value) in &self.flags {
+            env.push(key.clone());
+            env.push(value.clone());
+        }
+        env
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::container::{list_running, stop_container, Container};
+    use std::collections::HashMap;
 
     #[tokio::test]
     async fn test_list_running() {
@@ -165,5 +182,18 @@ mod tests {
         .await;
 
         assert!(matches!(result, Err(_)));
+    }
+
+    #[tokio::test]
+    async fn test_limit_cpu() {
+        let _output = Container {
+            repo: "alpine",
+            flags: HashMap::from([("--cpus".to_string(), "2.0".to_string())]),
+            norm: true,
+            ..Default::default()
+        }
+        .start()
+        .await
+        .unwrap();
     }
 }
