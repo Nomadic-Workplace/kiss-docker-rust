@@ -19,12 +19,23 @@ pub struct Container<'a> {
 
     /// command [arg...]
     pub ops: &'a [&'a str],
+
+    pub network: Option<&'a str>,
+
+    pub name: Option<&'a str>,
 }
 
 pub async fn stop_container(id: &str) -> error::Result<()> {
     command::docker_exec(vec!["stop", id]).await?;
     Ok(())
 }
+
+pub async fn stop_and_rm_container(id: &str) -> error::Result<()> {
+    command::docker_exec(vec!["stop", id]).await?;
+    command::docker_exec(vec!["rm", id]).await?;
+    Ok(())
+}
+
 pub async fn list_running(filter: Option<&str>) -> error::Result<Vec<RunningContainer>> {
     let lines = command::docker_exec(vec![
         "ps",
@@ -35,6 +46,23 @@ pub async fn list_running(filter: Option<&str>) -> error::Result<Vec<RunningCont
         "{{json .}}",
     ])
     .await?;
+
+    lines
+        .split('\n')
+        .filter(|s| !s.is_empty())
+        .filter(|s| {
+            if let Some(f) = &filter {
+                s.contains(f)
+            } else {
+                true
+            }
+        })
+        .map(|raw| serde_json::from_str(raw).map_err(error::KissDockerError::SerdeError))
+        .collect::<error::Result<Vec<RunningContainer>>>()
+}
+
+pub async fn list_all(filter: Option<&str>) -> error::Result<Vec<RunningContainer>> {
+    let lines = command::docker_exec(vec!["ps", "-a", "--format", "{{json .}}"]).await?;
 
     lines
         .split('\n')
@@ -84,6 +112,14 @@ impl Container<'_> {
 
         if !self.env.is_empty() {
             cmd.extend(env);
+        }
+
+        if let Some(network) = self.network {
+            cmd.extend(["--network", network]);
+        }
+
+        if let Some(name) = self.name {
+            cmd.extend(["--name", name]);
         }
 
         cmd.extend(flags);

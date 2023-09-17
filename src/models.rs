@@ -70,3 +70,15 @@ pub struct RunningContainer {
     #[serde(default)]
     pub state: String,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NetworkSummary {
+    #[serde(rename = "ID")]
+    pub id: String,
+
+    #[serde(rename = "Name")]
+    pub name: String,
+
+    #[serde(rename = "Driver")]
+    pub driver: String,
+}
