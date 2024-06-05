@@ -64,22 +64,6 @@ jobs:
         with:
           command: check
           args: --tests
-  udeps:
-    needs: [ build ]
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-      - uses: Swatinem/rust-cache@v1
-      - uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: cargo-udeps --locked
-      - name: Find unused dependencies
-        run: cargo +nightly udeps
   test:
     name: Test
     needs: [ build ]

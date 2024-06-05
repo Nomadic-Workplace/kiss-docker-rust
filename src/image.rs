@@ -1,3 +1,6 @@
+// Copyright 2022-2024 Nomadic Workplace
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 use crate::command::docker_exec;
 use crate::error;
 use crate::models::ImageSummary;

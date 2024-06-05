@@ -1,3 +1,6 @@
+// Copyright 2022-2024 Nomadic Workplace
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 use async_process::Command;
 
 use crate::error;
